@@ -1,0 +1,14 @@
+Feature Name,Description
+No,Unique Identifier
+year,Year When Readings Were Taken
+month,Month When Readings Were Taken
+day,Day When Readings Were Taken
+hour,Hour When Readings Were Taken
+DEWP,Dew Point (℃)
+TEMP,Temperature (℃)
+PRES,Pressure (hPa)
+cbwd,Combined wind direction
+Iws,Cumulated wind speed (m/s)
+ls,Cumulated hours of snow
+lr,Cumulated hours of rain
+pm2.5,PM2.5 concentration (ug/m^3)
