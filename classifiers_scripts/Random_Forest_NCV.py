@@ -1,5 +1,5 @@
 """
-Runs XGBoost on dataset with no CV
+Runs RF with nested CV
 """
 #%% import data
 import pandas as pd
@@ -53,76 +53,90 @@ preprocessor = ColumnTransformer(
     remainder='passthrough'  # Keep other columns as is
 )
 
-#%%
-"""XGBoost Classifier without Cross-Validation"""
-
-from sklearn.compose import ColumnTransformer
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
+#%% Random Forest
 from sklearn.pipeline import Pipeline
-from xgboost import XGBClassifier
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import roc_auc_score, f1_score, roc_curve
 import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
 
-# Initialize lists to store overall results
+# Initialize lists to store results for each hour
 f1_scores = []
 roc_aucs = []
-num_hours = 12  # Adjust based on your loop range
 
 # Create a single plot for all ROC curves
 plt.figure(figsize=(10, 8))
 
-for i in range(1, num_hours + 1):  # Adjust the range based on your data
-    print(f"\nProcessing {i} hour(s) after...")
-    
-    # Define target variables
+# Use tqdm to add a progress bar to the loop
+for i in range(1, 13):
+    # The current ith hour after current hour as label
     y_train = data_train[f'pm2.5_{i}_hour_after'] >= 50
-    y_train = y_train.astype(int)
     y_test = data_test[f'pm2.5_{i}_hour_after'] >= 50
-    y_test = y_test.astype(int)
-    
-    # Create a pipeline with preprocessing and the XGBoost model
+
+    # Create a pipeline with preprocessing and the Random Forest model
     pipeline = Pipeline([
-        ('preprocessor', preprocessor),  # Preprocess numerical and categorical columns
-        ('classifier', XGBClassifier(
-            n_estimators=300,
-            max_depth=3,
-            learning_rate=0.05,
-            eval_metric='logloss',
-            random_state=1))
+        ('preprocessor', preprocessor),  # Normalize numerical columns
+        ('classifier', RandomForestClassifier(random_state=1))  # Random Forest model
     ])
-    
-    # Fit the model on the entire training data
-    pipeline.fit(X_train, y_train)
-    
+
+    # Define parameter grid for Random Forest hyperparameter tuning
+    param_grid = {
+        'classifier__n_estimators': [100, 200],
+        'classifier__max_depth': [None, 10, 20],
+        'classifier__min_samples_split': [2, 5, 10]
+    }
+
+    # Wrap the pipeline in GridSearchCV
+    grid = GridSearchCV(
+        estimator=pipeline,
+        param_grid=param_grid,
+        scoring='roc_auc',
+        cv=3,
+        n_jobs=-1,
+        verbose=1
+    )
+
+    # Train the pipeline with grid search
+    grid.fit(X_train, y_train)
+
+    # Get the best model after grid search
+    model = grid.best_estimator_
+
+    # Store best estimator to lst
+    best_models[i - 1]['RF'] = model
+
     # Predictions on the test data
     y_pred_test = pipeline.predict(X_test)
     y_prob_test = pipeline.predict_proba(X_test)[:, 1]
-    
-    # Calculate test metrics
+
+    # Calculate scores for the test data
     f1_test = f1_score(y_test, y_pred_test)
     roc_auc_test = roc_auc_score(y_test, y_prob_test)
-    
-    # Store test metrics
+
+    # Store the results
     f1_scores.append(f1_test)
     roc_aucs.append(roc_auc_test)
-    
+
+    # Output the test F1 Score and ROC-AUC for the current hour
+    print(f"{i} hours after: Test F1 Score: {f1_test:.2f}, Test ROC-AUC: {roc_auc_test:.2f}")
+
     # ROC Curve for test data
     fpr_test, tpr_test, _ = roc_curve(y_test, y_prob_test)
-    
-    # Plot the ROC curve on the single plot
-    plt.plot(fpr_test, tpr_test, label=f'{i} hours after (AUC = {roc_auc_test:.2f})')
 
-# Plot the diagonal line for reference
+    # Plot the ROC curve on the single plot
+    plt.plot(fpr_test, tpr_test, label=f'{i} hours after (area = {roc_auc_test:.2f})')
+
+# Plot the diagonal line
 plt.plot([0, 1], [0, 1], 'k--')
 
-# Configure plot aesthetics
+# Configure plot
 plt.xlim([-0.01, 1.01])
 plt.ylim([-0.01, 1.01])
 plt.xlabel('False Positive Rate')
 plt.ylabel('True Positive Rate')
-plt.title('Combined Receiver Operating Characteristic (ROC) Curves')
+plt.title('Combined Receiver Operating Characteristic Curves')
 plt.legend(loc="lower right")
 plt.show()
-# %%
+
+# Output overall results
+print(f"Averaged F1 Score: {sum(f1_scores)/len(f1_scores):.2f}")
+print(f"Averaged ROC-AUC: {sum(roc_aucs)/len(roc_aucs):.2f}")
