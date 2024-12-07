@@ -1,7 +1,6 @@
 """
-XGBoost Classifier with Nested Cross-Validation and Early Stopping
+XGBoost Classifier with Nested Cross-Validation
 """
-
 #%% Import data
 import pandas as pd
 
@@ -55,8 +54,7 @@ preprocessor = ColumnTransformer(
     remainder='passthrough'  # Keep other columns as is
 )
 
-# %% XGBoost Classifier with Nested Cross-Validation and Early Stopping
-
+# %% XGBoost Classifier with Nested Cross-Validation
 from sklearn.pipeline import Pipeline
 from xgboost import XGBClassifier
 from sklearn.model_selection import StratifiedKFold, GridSearchCV, train_test_split
@@ -64,6 +62,7 @@ from sklearn.metrics import roc_auc_score, f1_score, roc_curve
 import matplotlib.pyplot as plt
 import numpy as np
 from collections import Counter
+import joblib
 
 # Initialize lists to store overall results
 f1_scores = []
@@ -96,7 +95,7 @@ for i in range(1, num_hours + 1):
     y_test = data_test[f'pm2.5_{i}_hour_after'] >= 50
     y_test = y_test.astype(int)
 
-    # Split the training data into training and validation sets for early stopping
+    # Split the training data into training and validation sets
     X_train_split, X_valid_split, y_train_split, y_valid_split = train_test_split(
         X_train, y_train, test_size=0.2, random_state=1, stratify=y_train
     )
@@ -176,6 +175,10 @@ for i in range(1, num_hours + 1):
         X_train_split, y_train_split
     )
 
+    # Save the trained model to a file
+    joblib.dump(pipeline.named_steps['classifier'], f'../outputs/xgb_hour_{i}.joblib')
+    print(f'model saved for {i} hours(s) after')
+
     # Predictions on the test data
     y_pred_test = pipeline.predict(X_test)
     y_prob_test = pipeline.predict_proba(X_test)[:, 1]
@@ -223,7 +226,7 @@ print(f"Averaged ROC-AUC: {np.mean(roc_aucs):.2f}")
 
 # Save all predictions to a CSV file
 prediction_df = pd.DataFrame(predictions)
-prediction_df.to_csv('../outputs/pred_xgb.csv', index=False)
+prediction_df.to_csv('../outputs/xgb_pred.csv', index=False)
 print("Predicted values have been saved to predictions.csv")
 
 #%% Save Best Parameters to xgb_params.txt
