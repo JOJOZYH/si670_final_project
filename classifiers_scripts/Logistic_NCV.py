@@ -29,7 +29,7 @@ print(f"Training Data Size: {data_train.shape[0]}")
 print(f"Test Data Size: {data_test.shape[0]}")
 
 from sklearn.compose import ColumnTransformer
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, PolynomialFeatures
 from sklearn.pipeline import Pipeline
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import StratifiedKFold, GridSearchCV, train_test_split
@@ -44,9 +44,13 @@ X_test = data_test.drop(columns=[f'pm2.5_{j}_hour_after' for j in range(1, 13)] 
 
 numerical_columns = X_train.select_dtypes(include=['float64', 'int64']).columns
 
+# Add PolynomialFeatures for second-order terms
 preprocessor = ColumnTransformer(
     transformers=[
-        ('num', StandardScaler(), numerical_columns)
+        ('poly', Pipeline([
+            ('scaler', StandardScaler()),
+            ('poly', PolynomialFeatures(degree=2, include_bias=False))
+        ]), numerical_columns)
     ],
     remainder='passthrough'
 )

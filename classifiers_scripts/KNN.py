@@ -30,7 +30,7 @@ print(f"Training Data Size: {data_train.shape[0]}")
 print(f"Test Data Size: {data_test.shape[0]}")
 
 from sklearn.compose import ColumnTransformer
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import MinMaxScaler
 from sklearn.pipeline import Pipeline
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import StratifiedKFold, GridSearchCV, train_test_split
@@ -47,7 +47,7 @@ numerical_columns = X_train.select_dtypes(include=['float64', 'int64']).columns
 
 preprocessor = ColumnTransformer(
     transformers=[
-        ('num', StandardScaler(), numerical_columns)
+        ('num', MinMaxScaler(), numerical_columns)
     ],
     remainder='passthrough'
 )
