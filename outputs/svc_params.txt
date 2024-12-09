@@ -1,0 +1,12 @@
+Hour 1 Best Parameters: {'classifier__C': 10, 'classifier__kernel': 'rbf', 'classifier__gamma': 'auto'}
+Hour 2 Best Parameters: {'classifier__C': 10, 'classifier__kernel': 'rbf', 'classifier__gamma': 'auto'}
+Hour 3 Best Parameters: {'classifier__C': 10, 'classifier__kernel': 'rbf', 'classifier__gamma': 'scale'}
+Hour 4 Best Parameters: {'classifier__C': 10, 'classifier__kernel': 'rbf', 'classifier__gamma': 'scale'}
+Hour 5 Best Parameters: {'classifier__C': 10, 'classifier__kernel': 'rbf', 'classifier__gamma': 'scale'}
+Hour 6 Best Parameters: {'classifier__C': 10, 'classifier__kernel': 'rbf', 'classifier__gamma': 'scale'}
+Hour 7 Best Parameters: {'classifier__C': 10, 'classifier__kernel': 'rbf', 'classifier__gamma': 'scale'}
+Hour 8 Best Parameters: {'classifier__C': 10, 'classifier__kernel': 'rbf', 'classifier__gamma': 'scale'}
+Hour 9 Best Parameters: {'classifier__C': 10, 'classifier__kernel': 'rbf', 'classifier__gamma': 'scale'}
+Hour 10 Best Parameters: {'classifier__C': 10, 'classifier__kernel': 'rbf', 'classifier__gamma': 'scale'}
+Hour 11 Best Parameters: {'classifier__C': 10, 'classifier__kernel': 'rbf', 'classifier__gamma': 'scale'}
+Hour 12 Best Parameters: {'classifier__C': 10, 'classifier__kernel': 'rbf', 'classifier__gamma': 'scale'}
